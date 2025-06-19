@@ -218,6 +218,11 @@ class BaseModel(ABC):
                 if hasattr(state_dict, '_metadata'):
                     del state_dict._metadata
 
+                # Handle 'module.' prefix in state dict keys
+                if all(key.startswith('module.') for key in state_dict.keys()):
+                    # Remove 'module.' prefix from all keys
+                    state_dict = {k.replace('module.', ''): v for k, v in state_dict.items()}
+
                 # patch InstanceNorm checkpoints prior to 0.4
                 # for key in list(state_dict.keys()):  # need to copy keys here because we mutate in loop
                 #    self.__patch_instance_norm_state_dict(state_dict, net, key.split('.'))

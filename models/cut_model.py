@@ -111,6 +111,8 @@ class CUTModel(BaseModel):
                 self.optimizers.append(self.optimizer_F)
 
     def optimize_parameters(self):
+        assert self.opt.isTrain, 'No parameter optimization. The model is in test mode'
+
         # forward
         self.forward()
 
@@ -140,7 +142,11 @@ class CUTModel(BaseModel):
         """
         AtoB = self.opt.direction == 'AtoB'
         self.real_A = input['A' if AtoB else 'B'].to(self.device)
-        self.real_B = input['B' if AtoB else 'A'].to(self.device)
+        if 'B' in input:
+            self.real_B = input['B' if AtoB else 'A'].to(self.device)
+        else:
+            assert not self.opt.isTrain, 'Domain B is required during training'
+            self.real_B = self.real_A
         self.image_paths = input['A_paths' if AtoB else 'B_paths']
 
     def forward(self):
@@ -158,6 +164,7 @@ class CUTModel(BaseModel):
 
     def compute_D_loss(self):
         """Calculate GAN loss for the discriminator"""
+        assert self.opt.isTrain, 'No GAN loss for the discriminator. The model is in test mode'
         fake = self.fake_B.detach()
         # Fake; stop backprop to the generator by detaching fake_B
         pred_fake = self.netD(fake)
@@ -173,6 +180,8 @@ class CUTModel(BaseModel):
 
     def compute_G_loss(self):
         """Calculate GAN and NCE loss for the generator"""
+
+        assert self.opt.isTrain, 'No GAN and NCE loss for the generator. The model is in test mode'
         fake = self.fake_B
         # First, G(A) should fake the discriminator
         if self.opt.lambda_GAN > 0.0:
@@ -196,6 +205,7 @@ class CUTModel(BaseModel):
         return self.loss_G
 
     def calculate_NCE_loss(self, src, tgt):
+        assert self.opt.isTrain, 'No NCE loss. The model is in test mode'
         n_layers = len(self.nce_layers)
         feat_q = self.netG(tgt, self.nce_layers, encode_only=True)
 
