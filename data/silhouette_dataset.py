@@ -91,8 +91,10 @@ class SilhouetteDataset(BaseDataset):
         else:   # randomize the index for domain B to avoid fixed pairs.
             index_B = random.randint(0, self.B_size - 1)
         B_path = self.B_paths[index_B]
-        A_img = Image.open('/'.join([self.root_A, A_path])).convert('L')
-        B_img = Image.open('/'.join([self.root_B, B_path])).convert('L')
+        with Image.open('/'.join([self.root_A, A_path])) as img:
+            A_img = img.convert('L')
+        with Image.open('/'.join([self.root_B, B_path])) as img:
+            B_img = img.convert('L')
         # apply image normalization
         A = ToTensor()(normalize_silhouette_image(A_img))
         B = ToTensor()(normalize_silhouette_image(B_img))
