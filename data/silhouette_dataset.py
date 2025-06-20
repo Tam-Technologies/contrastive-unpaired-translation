@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 import torch
 from PIL import Image
-from torchvision.transforms import ToTensor
+from torchvision import transforms
 
 from data.base_dataset import BaseDataset
 
@@ -39,7 +39,10 @@ def normalize_silhouette_image(image, out_image_size=SILHOUETTE_IMAGE_SIZE):
     normalized_image = Image.new('L', (out_image_size[0], out_image_size[1]))
     normalized_image.paste(resized_image, (int((out_image_size[0]-resized_image.size[0])/2), int((out_image_size[1]-resized_image.size[1])/2)))
 
-    return normalized_image
+    # Convert to tensor, normalize values from -1 to 1
+    normalize_transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.5,), (0.5,))])
+
+    return normalize_transform(normalized_image)
 
 class SilhouetteDataset(BaseDataset):
     """A custom dataset to load grayscale silhouette images from image paths stored in a CSV."""
@@ -96,8 +99,12 @@ class SilhouetteDataset(BaseDataset):
         with Image.open('/'.join([self.root_B, B_path])) as img:
             B_img = img.convert('L')
         # apply image normalization
-        A = ToTensor()(normalize_silhouette_image(A_img))
-        B = ToTensor()(normalize_silhouette_image(B_img))
+        A = normalize_silhouette_image(A_img)
+        B = normalize_silhouette_image(B_img)
+
+        if not self.opt.no_flip:
+            A = transforms.RandomHorizontalFlip()(A)
+            B = transforms.RandomHorizontalFlip()(B)
 
         return {'A': A, 'B': B, 'A_paths': A_path, 'B_paths': B_path}
 
