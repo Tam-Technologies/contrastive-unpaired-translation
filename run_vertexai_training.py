@@ -36,8 +36,7 @@ if __name__=="__main__":
         location=constants.LOCATION
     )
 
-    job_args = ['train',
-                '--dataroot', f'/gcs/{constants.VERTEX_AI_BUCKET_NAME}',
+    job_args = ['--dataroot', f'/gcs/{constants.VERTEX_AI_BUCKET_NAME}',
                 '--dataroot_B', f'/gcs',
                 '--dataset_mode', 'silhouette',
                 '--dataset_csv_A',
@@ -48,7 +47,7 @@ if __name__=="__main__":
                 f'/gcs/{constants.VERTEX_AI_BUCKET_NAME}/cut_checkpoints',
                 '--name',
                 args.experiment_name,
-                '--save_latest_freq', '4000',
+                '--save_latest_freq', '1000',
                 '--save_epoch_freq', '1',
                 '--display_freq', '400',
                 '--update_html_freq', '1000',
