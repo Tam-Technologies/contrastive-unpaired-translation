@@ -73,5 +73,17 @@ if __name__ == '__main__':
             model.save_networks('latest')
             model.save_networks(epoch)
 
+            # display images on visdom and save images to a HTML file
+            save_result = True
+            model.compute_visuals()
+            visualizer.display_current_results(model.get_current_visuals(), epoch, save_result)
+
+            # print training losses and save logging information to the disk
+            losses = model.get_current_losses()
+            visualizer.print_current_losses(epoch, epoch_iter, losses, optimize_time, t_data)
+            if opt.display_id is None or opt.display_id > 0:
+                visualizer.plot_current_losses(epoch, float(epoch_iter) / dataset_size, losses)
+
+
         print('End of epoch %d / %d \t Time Taken: %d sec' % (epoch, opt.n_epochs + opt.n_epochs_decay, time.time() - epoch_start_time))
         model.update_learning_rate()                     # update learning rates at the end of every epoch.
