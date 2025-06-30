@@ -47,10 +47,10 @@ def overlay_silhouette_images(image1, image2):
 
 def transfer_synthetic_silhouette(image_path, model):
     input_A = Image.open(image_path).convert('L')
-    real_A = normalize_silhouette_image(input_A, out_image_size=input_A.size)
-    prediction_size_A = normalize_silhouette_image(input_A)
-    A_tensor = ToTensor()(prediction_size_A).unsqueeze(0)
-    data = {'A': A_tensor, 'A_paths': image_path}
+    real_A_tensor = normalize_silhouette_image(input_A, out_image_size=input_A.size)
+    real_A = Image.fromarray(real_A_tensor.squeeze(0).squeeze(0).numpy() * 255).convert('L')
+    prediction_A_tensor = normalize_silhouette_image(input_A).unsqueeze(0)
+    data = {'A': prediction_A_tensor, 'A_paths': image_path}
     model.set_input(data)  # unpack data from data loader
     model.test()  # run inference
     visuals = model.get_current_visuals()
